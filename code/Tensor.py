@@ -8,18 +8,19 @@ import copy
 # A node structure 
 class Tensor: 
     # A utility function to create a new tensor
-    def __init__(self ,key): 
-        self.data = np.array(copy.deepcopy(key[0]))
-        self.type=key[1]
-        self.dimensions = copy.deepcopy(key[2])
-        self.index=key[3] #tells the index of this tensor in listTensors
-        self.input=key[4]
+    def __init__(self ,data,tensor_type,dimensions,index,is_input,name): 
+        self.data = np.array(copy.deepcopy(data))
+        self.type=tensor_type
+        self.dimensions = copy.deepcopy(dimensions)
+        self.index=index #tells the index of this tensor in listTensors
+        self.input=is_input
+        self.name=name
 #        self.name=key[5]
          #type 1 is good, type 2 is bad (for products), type 3 is ugly (products)
     
     # generated children must satisfy signatures
     def multiply(self, n):
-        tmp=Tensor([n*self.data,self.type,self.dimensions,self.index,1])
+        tmp=Tensor(n*self.data,self.type,self.dimensions,self.index,1,self.name)
 #        tmp.data=n*self.data
         return tmp
         

@@ -44,7 +44,7 @@ class Node:
 #        self.highestDimAddedPerTerm = self.highest[14]
         
      
-    def isTrivial(self,tensorList):
+    def isTrivial(self,tensor_properties):
         if self.LHSequalsRHS():
             return True
         if self.negZ==0 and (len(self.E))==0:
@@ -53,15 +53,15 @@ class Node:
         ind=0
         for i in range(len(self.E)):
             for j in range(len(self.E[i])):
-                if tensorList[self.E[i][j]].input==0:
+                if tensor_properties[self.E[i][j]].input==0:
                     ind=1
         if ind==0:
             for i in range(len(self.F)):
                 for j in range(len(self.F[i])):
-                    if tensorList[self.F[i][j]].input==0:
+                    if tensor_properties[self.F[i][j]].input==0:
                         ind=1
         if ind==0:
-            if tensorList[self.Z].input==0:
+            if tensor_properties[self.Z].input==0:
                 ind=1
         if ind==0:
             return True
@@ -309,7 +309,6 @@ class Node:
         return children
     
         
-    # generated children must satisfy signatures -- maybe not
     # operations' first term has highest order tensor, second term has highest order 
     # dimension and 3rd term has highest order operations
     # add +ve term < multiply < add dim < remove dim < divide < remove -ve term
@@ -435,8 +434,9 @@ class Node:
             for j in range(len(self.F[i])):
 #                print("######", i,j ,"######")
 #                self.prettyPrint()
-#                print(self.operation)
+#                print(self.FM)
                 slices.append(helper.tensorSlice(listOfTensors[self.F[i][j]],self.FM[i][j],var))
+#            print(self.F,self.FS)
             tmp=helper.dimSum(helper.tensorDotProduct(slices,var),self.FS[i],var)
 #            print(tmp.multiply(-1))
             sumTerms.append(tmp.multiply(-1))
@@ -446,11 +446,11 @@ class Node:
 #        print("len:",len(sumTerms))
         if self.negZ==0:
             if len(self.E)+len(self.F)==0:
-                return helper.compareTensorsLE(Tensor.Tensor([0,1,[],-1,1]),helper.tensorSlice(listOfTensors[self.Z],self.ZM,var),var)
+                return helper.compareTensorsLE(Tensor.Tensor(0,1,[],-1,1,1),helper.tensorSlice(listOfTensors[self.Z],self.ZM,var),var)
             return helper.compareTensorsLE(helper.tensorSum(sumTerms),helper.tensorSlice(listOfTensors[self.Z],self.ZM,var),var)
         else:
             if len(self.E)+len(self.F)==0:
-                return helper.compareTensorsLE(Tensor.Tensor([0,1,[],-1,1]),helper.tensorSlice(listOfTensors[self.Z].multiply(-1),self.ZM,var),var)
+                return helper.compareTensorsLE(Tensor.Tensor(0,1,[],-1,1,1),helper.tensorSlice(listOfTensors[self.Z].multiply(-1),self.ZM,var),var)
 #            print(sumTerms)
             return helper.compareTensorsLE(helper.tensorSum(sumTerms),helper.tensorSlice(listOfTensors[self.Z].multiply(-1),self.ZM,var),var)
         
