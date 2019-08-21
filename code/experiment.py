@@ -20,7 +20,7 @@ import pickle
 import copy
 
 
-def precision_cal(constraints,testExamples,inputVariables,listOfTensors,dimensions,dimension_length,folder,file_name):
+def precision_cal(constraints,testExamples,inputVariables,variables,listOfTensors,dimensions,dimension_length,folder,file_name):
     helper.createMzn(constraints,folder,file_name,inputVariables,testExamples[0],dimensions,dimension_length)
 #    precision=[]
 #    for i in range(5):
@@ -47,13 +47,18 @@ def precision_cal(constraints,testExamples,inputVariables,listOfTensors,dimensio
     elif 'curriculum' in dznFile:
         dataDic={'n_courses':46, 'n_periods':8, 'load_per_period_lb':10, 'load_per_period_ub':24, 'courses_per_period_lb':2, 'courses_per_period_ub':10, 'course_load':[1,  3,  1,  2,  4, 4,  1,  5,  3,  4, 4,  5,  1,  3,  3, 4,  1,  1,  3,  3, 3,  3,  3,  3,  1, 4,  4,  3,  3,  3, 2,  4,  3,  3,  3, 3,  3,  3,  3,  3, 3,  3,  2,  3,  3, 3]}
     elif 'knapsack' in dznFile:
-        dataDic={'n':5, 'capacity':200000, 'size':[90,72,43,40,33], 'profit' :  [1300,1000,520,480,325]}
+        dataDic={'n':5, 'capacity':200000, 'size':[90,72,43,40,33], 'profit':[1300,1000,520,480,325]}
     elif 'schedule' in dznFile:
         dataDic={'const':30, 'const2':50, 'const3':1, 'Ds':[16, 6,13, 7, 5,18, 4], 'Rs' :  [ 2, 9, 3, 7,10, 1,11]}
     
     prec=0
     
-    tmp=pymzn.minizinc(mznFile,data=dataDic,timeout=10,all_solutions=True,output_vars=variables)
+    tmp_var=variables.copy()
+    for val in inputVariables:
+        tmp_var.remove(val)
+    tmp=pymzn.minizinc(mznFile,data=dataDic,timeout=10,all_solutions=True,output_vars=tmp_var)
+#    print(len(tmp))
+#    print(tmp[0])
     numExample=1000
     if len(tmp)<1000:
         numExample=len(tmp)
@@ -80,11 +85,13 @@ def precision_cal(constraints,testExamples,inputVariables,listOfTensors,dimensio
             sol['x']=to_matrix(sol['x'],dataDic['n_courses'])
         
         try:
+#            print(sol)
             o=pymzn.minizinc(folder+args.mznfile+'.mzn',data=sol)
-            print(o)
+#            print(o)
         except:
             continue
         prec+=1
+#    print("prec:",prec)
     return float(prec*100)/numExample
         
 #    return np.mean(precision), np.std(precision)
@@ -144,15 +151,15 @@ def runMinizinc(dznFile,mznFile,variables,numExample):
             outputDic.append(sol)
             
 
-    num=2000
-    if len(outputDic)<1000:
-        num=len(outputDic)
-    data=helper.list_sample(outputDic[:num],numExample)
-    print("...Randomly Selected",len(data),"examples...")
+#    num=10000
+#    if len(outputDic)<10000:
+#        num=len(outputDic)
+    data=helper.list_sample(outputDic,numExample)
+#    print("...Randomly Selected",len(data),"examples...")
 #    print(data[0])
     return data
 
-def crossValidate(folder,numTrain,data,inputVariables,dimensions,dimension_length,sums,products,slicing,negation,negZ,ind):
+def crossValidate(folder,numTrain,data,inputVariables,variables,dimensions,dimension_length,sums,products,slicing,negation,negZ,ind):
     numElemBucket=math.floor(len(data)/5)
     timeTaken=[]
     recall=[]
@@ -163,6 +170,7 @@ def crossValidate(folder,numTrain,data,inputVariables,dimensions,dimension_lengt
         trainExamples=data[i*numElemBucket:(i+1)*numElemBucket][:numTrain]
         testExamples=[d for j,d in enumerate(data) if j not in range(i*numElemBucket,(i+1)*numElemBucket)]
         start = time.clock()
+#        print(trainExamples)
         constraints=arnold.learn(trainExamples,inputVariables,tensor_properties,dimensions,dimension_length,sums,products,slicing,negation,negZ)
 #        constraints=[]
 #        for constraint in tmp:
@@ -173,7 +181,7 @@ def crossValidate(folder,numTrain,data,inputVariables,dimensions,dimension_lengt
         file_name='constraints_'+ind+'_'+str(sums)+str(products)+str(negation)+str(negZ)+str(numTrain)+str(i)
         pickle.dump( constraints, open( folder+'pickles/'+file_name+'.pickle', "wb" ) )
         recall.append(recall_cal(constraints,testExamples,inputVariables,tensor_properties,dimensions,dimension_length))
-        precision.append(precision_cal(constraints,testExamples,inputVariables,tensor_properties,dimensions,dimension_length,folder,file_name))
+        precision.append(precision_cal(constraints,testExamples,inputVariables,variables,tensor_properties,dimensions,dimension_length,folder,file_name))
         numConstraints.append(len(constraints))
     
     print("######################################")
@@ -202,6 +210,7 @@ def findVarDim(data):
       
 def runExperiment(folder,dznFile,mznFile,variables,inputVariables,numExample,trainSize,sumList,prodList,negation):
     data=runMinizinc(folder+dznFile,folder+mznFile,variables,numExample) #data is a list of dictionary with keys being the name of the variables
+#    print(data)
     if len(data)<max(trainSize)*5:
         print("Generated only",len(data),"examples. Please reduce training size to <=",len(data)/5)
         return
@@ -213,7 +222,7 @@ def runExperiment(folder,dznFile,mznFile,variables,inputVariables,numExample,tra
 #        var.append(var[0])
     slicing=0   
     ind='s'+''.join(str(e) for e in sumList)+'p'+''.join(str(e) for e in prodList)+'n'+str(negation)
-    csvfile = open(folder+'results/extended_results'+ind+'_v10.csv', 'w')
+    csvfile = open(folder+'results/extended_results'+ind+'.csv', 'w')
     filewriter = csv.writer(csvfile, delimiter=',')
     filewriter.writerow(['# of Tensors','Training Size', 'Avg # of Constraints', 'Std # of Constraints','Avg Recall','Std Recall','Avg Precision','Std Precision','Avg Time','Std Time','Sum','Product','NegTerms','NegZ'])
     csvfile.close()
@@ -221,7 +230,7 @@ def runExperiment(folder,dznFile,mznFile,variables,inputVariables,numExample,tra
     for sums,products,negZ in itertools.product(sumList,prodList,[1]):
         for numTrain in trainSize:
             if numTrain<len(data):
-                numConstraints,recall,precision,timeTaken=crossValidate(folder,numTrain,data,inputVariables,dimensions,dimension_length,sums,products,slicing,negation,negZ,ind)
+                numConstraints,recall,precision,timeTaken=crossValidate(folder,numTrain,data,inputVariables,variables,dimensions,dimension_length,sums,products,slicing,negation,negZ,ind)
                 row=[len(data[0]),numTrain,np.mean(numConstraints),np.std(numConstraints),np.mean(recall),np.std(recall),np.mean(precision),np.std(precision),np.mean(timeTaken),np.std(timeTaken),sums,products,negation,negZ]
                 results.append(row)
                 
@@ -251,13 +260,13 @@ CLI.add_argument(
   "--sum",  
   nargs="*",  
   type=int,
-  default=[1,2],  
+  default=[1],  
 )
 CLI.add_argument(
   "--prod",
   nargs="*",
   type=int,  
-  default=[1,2],
+  default=[1,2,3],
 )
 CLI.add_argument(
   "--num_example",
