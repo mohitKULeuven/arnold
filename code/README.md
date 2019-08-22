@@ -1,4 +1,4 @@
-# CountOR
+# ARNOLD
 
 An implementation of the ARNOLD algorithm for learning polynomial constraints from positive data.
 
