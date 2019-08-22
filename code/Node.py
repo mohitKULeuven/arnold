@@ -25,23 +25,6 @@ class Node:
         self.operation=copy.deepcopy(data[10])
         self.negZ=data[11]
         
-#        self.highestOperation=self.highest[0]
-#        
-#        self.highestDimRemovedTerm = self.highest[1]
-#        self.highestDimRemovedPerTerm = self.highest[2]
-#        self.highestTensorDividedTerm = self.highest[3]
-#        self.highestTensorDividedPerTerm = self.highest[4]
-#        self.highestBadTensorMultiplyTerm = self.highest[5]
-#        self.highestBadTensorMultiplyPerTerm = self.highest[6]
-#        self.highestTensorRemoved = self.highest[7]
-#        
-#        self.highestTensorAdded = self.highest[8]
-#        self.highestBadTensorDivideTerm = self.highest[9]
-#        self.highestBadTensorDividePerTerm = self.highest[10]
-#        self.highestTensorMultiplyTerm = self.highest[11]
-#        self.highestTensorMultiplyPerTerm = self.highest[12]
-#        self.highestDimAddedTerm = self.highest[13]
-#        self.highestDimAddedPerTerm = self.highest[14]
         
      
     def isTrivial(self,tensor_properties):
@@ -78,8 +61,6 @@ class Node:
         return True
     
     def LHSequalsRHS(self):
-#        print(self.E[0][0],self.Z)
-#        print(len(self.E)==1,len(self.E[0])==1,len(self.ES[0])==0,self.E[0][0]==self.Z, set(self.EM[0][0])==set(self.ZM))
         if len(self.E)==1 and len(self.E[0])==1 and len(self.ES[0])==0 and self.E[0][0]==self.Z and set(self.EM[0][0])==set(self.ZM):
             return True
         if self.negZ==1 and len(self.F)==1 and len(self.F[0])==1 and len(self.FS[0])==0 and self.F[0][0]==self.Z and set(self.FM[0][0])==set(self.ZM):
@@ -98,7 +79,6 @@ class Node:
         if self.highest[0]<=0 and len(self.F)>0:
             for i in range(self.highest[1],len(self.FS)):
                 sumOptions=self.FS[i]
-#                sumOptions = [item for item in sumOptions if item >= self.highest[2]]
                 for j in range(len(sumOptions)):
                     if sumOptions[j]>=self.highest[2][i]:
                         key=[self.E,self.EM,self.ES,self.F,self.FM,self.FS,self.Z,self.ZM,self.tensorList,self.highest,self.operation,self.negZ]
@@ -107,7 +87,6 @@ class Node:
                         child.highest[0]=0
                         child.highest[1]=i
                         child.highest[2][i]=sumOptions[j]
-#                        child.operation.append(["removeDimension",[i,sumOptions[j]]])
                         child.operation.append([self,"removeDimension",self.FS[i],sumOptions[j]])
                         children.append(child)
         return children
@@ -125,15 +104,12 @@ class Node:
                             for k in range(len(self.FM[i])):
                                 if k!=j:
                                     tmp=tmp | set(self.FM[i][k])
-#                            toBeRemoved=list(set(self.FM[i][j])-set(tmp))
                             toBeRemoved=list(set(self.FS[i])-set(tmp))
                             if self.F[i][j] >= self.highest[4][i] and len(toBeRemoved)==0:
                                 key=[self.E,self.EM,self.ES,self.F,self.FM,self.FS,self.Z,self.ZM,self.tensorList,self.highest,self.operation,self.negZ]
                                 child=Node(key)
                                 del child.F[i][j]
                                 del child.FM[i][j]
-#                                child.F[i].remove(self.F[i][j])
-#                                child.FM[i].remove(self.FM[i][j])
                                 child.highest[0]=1
                                 child.highest[3]=i
                                 child.highest[4][i]=self.F[i][j]
@@ -171,16 +147,12 @@ class Node:
         children=[]
         if self.highest[0]<=3 and len(self.F)>0:
             for i in range(len(self.F)-1,-1,-1):
-#                self.prettyPrint()
                 if len(self.F[i])==1 and self.F[i][0]>=self.highest[7] and len(self.FS[i])==0:
                     key=[self.E,self.EM,self.ES,self.F,self.FM,self.FS,self.Z,self.ZM,self.tensorList,self.highest,self.operation,self.negZ]
                     child=Node(key)
                     del child.F[i]
                     del child.FM[i]
                     del child.FS[i]
-#                    child.F.remove(self.F[i])
-#                    child.FM.remove(self.FM[i])
-#                    child.FS.remove(self.FS[i])
                     child.highest[0]=3
                     child.highest[7]=self.F[i][0]
                     child.operation.append([self,"removeTerm",self.F[i]])
@@ -192,15 +164,11 @@ class Node:
         children=[]
         if self.highest[0]<=4 and len(self.E)+len(self.F)<m:
             for i in range(self.highest[8],len(listOfTensors)):
-#                if i in self.tensorList[0]:
                 if slicing==0:
                     ps=[listOfTensors[i].dimensions]
-#                else:
-#                    ps=[self.tensorList[0][i].powerset()]
                 prod=len(self.tensorList[1])
                 if prod>=n-1:
                     prod=n-1
-#                    print("prod:",prod,self.tensorList[1])
                 for comb in it.combinations_with_replacement(self.tensorList[1],prod):
                     key=[self.E,self.EM,self.ES,self.F,self.FM,self.FS,self.Z,self.ZM,self.tensorList,self.highest,self.operation,self.negZ]
                     child=Node(key)
@@ -209,15 +177,8 @@ class Node:
                         e.append(c)
                         if slicing==0:
                             ps.append(listOfTensors[c].dimensions)
-#                        else:
-#                            ps.append(self.tensorList[i].powerset()) # returns powerset of dimensions
                     child.E.append(e)
                     
-#                    for elements in enumerate(ps):
-#                        for elem in elements:
-#                            key=[self.E,self.EM,self.ES,self.F,self.FM,self.FS,self.Z,self.ZM,self.tensorList,self.highest,self.operation,self.negZ]
-#                            child=Node(key)
-#                            child.E.append(e)
                     child.EM.append(ps)
                     child.ES.append([])
                     child.highest[0]=4
@@ -236,15 +197,11 @@ class Node:
                             if self.E[i][j] >= self.highest[10][i]:
                                 key=[self.E,self.EM,self.ES,self.F,self.FM,self.FS,self.Z,self.ZM,self.tensorList,self.highest,self.operation,self.negZ]
                                 child=Node(key)
-#                                child.printNode()
                                 del child.E[i][j]
                                 del child.EM[i][j]
-#                                child.E[i].remove(self.E[i][j])
-#                                child.EM[i].remove(self.EM[i][j])
                                 child.highest[0]=5
                                 child.highest[9]=i
                                 child.highest[10][i]=self.E[i][j]
-#                                child.operation.append(["divideBadTensor",[i,self.E[i][j]]])
                                 child.operation.append([self,"divideBadTensor",self.E[i],self.E[i][j]])
                                 children.append(child)
         return children
@@ -270,7 +227,6 @@ class Node:
                                 child.highest[0]=6
                                 child.highest[11]=i
                                 child.highest[12][i]=j
-#                                child.operation.append(["multiplyTensor",[i,j]])
                                 child.operation.append([self,"multiplyTensor",self.E[i],j])
                                 children.append(child)
         return children
@@ -278,8 +234,6 @@ class Node:
     #would satisfy the signatures except LHS Dim intersection RHS Dim not equal to 0
     def sumDimension(self):
         children=[]
-#        if self.Z==6 and self.negZ==0 and len(self.F)==0 and len(self.E)==1 and len(self.E[0])==1 and self.E[0][0]==2:
-#            print(self.highest[0],len(self.E))
             
         if self.highest[0]<=7 and len(self.E)>0:
             sumOptions=[]
@@ -299,19 +253,10 @@ class Node:
                         child.highest[13]=i
                         child.highest[14][i]=sumOptions[j]
                         child.operation.append([self,"sumDimension",self.ES[i],sumOptions[j]])
-    #                    child.printNode()
-    #                    child.prettyPrint()
                         children.append(child)
-#        if self.Z==6 and self.negZ==0 and len(self.F)==0 and len(self.E)==1 and len(self.E[0])==1 and self.E[0][0]==2:
-#            print(self.highest[0],len(self.E))
-#            for child in children:
-#                child.prettyPrint()
         return children
     
         
-    # operations' first term has highest order tensor, second term has highest order 
-    # dimension and 3rd term has highest order operations
-    # add +ve term < multiply < add dim < remove dim < divide < remove -ve term
     def generateChildren(self,listOfTensors,m,n,slicing,negation):
         children=[]
         
@@ -335,15 +280,6 @@ class Node:
             children.extend(self.multiplyTensor(listOfTensors,n,slicing))
             children.extend(self.sumDimension())
         
-#        elif negZ==0:
-#            children.extend(self.removeDimension())
-#            children.extend(self.divideTerm())
-#            children.extend(self.removeTerm())
-#            children.extend(self.multiplyBadTerm(listOfTensors,n,slicing))
-#            children.extend(self.addTerm(listOfTensors,m,n,slicing))
-#            children.extend(self.divideBadTerm())
-#            children.extend(self.multiplyTerm(listOfTensors,n,slicing))
-#            children.extend(self.sumDimension())
             
         return children
     
@@ -372,7 +308,6 @@ class Node:
             if len(self.E[i])>n:
                 return False
             
-#        remainingDim=set()
         for i in range(len(self.FM)):
             M=set()
             for j in range(len(self.FM[i])):
@@ -381,12 +316,8 @@ class Node:
                 return False
             
             if ind==0 and i==0:
-#                print(remainingDim)
-#                print(M-set(self.FS[i]))
                 remainingDim=M-set(self.FS[i])
             else:
-#                print(remainingDim)
-#                print(M-set(self.FS[i]))
                 if remainingDim!=M-set(self.FS[i]):
                     return False
             
@@ -417,33 +348,20 @@ class Node:
     
     # check if the node satisfies the constraint represented by the node
     def satisfiesConstraint(self,listOfTensors,var):
-#        if self.checkStructure():
         sumTerms=[]
-#        self.prettyPrint()
         for i in range(len(self.E)):
             slices=[]
             for j in range(len(self.E[i])):
                 slices.append(helper.tensorSlice(listOfTensors[self.E[i][j]],self.EM[i][j],var))
             tmp=helper.dimSum(helper.tensorDotProduct(slices,var),self.ES[i],var)
-#            print(tmp)
             sumTerms.append(tmp)
             
-#        subtractTerms=[]
         for i in range(len(self.F)):
             slices=[]
             for j in range(len(self.F[i])):
-#                print("######", i,j ,"######")
-#                self.prettyPrint()
-#                print(self.FM)
                 slices.append(helper.tensorSlice(listOfTensors[self.F[i][j]],self.FM[i][j],var))
-#            print(self.F,self.FS)
             tmp=helper.dimSum(helper.tensorDotProduct(slices,var),self.FS[i],var)
-#            print(tmp.multiply(-1))
             sumTerms.append(tmp.multiply(-1))
-#        print("printing")
-#        for tmp in sumTerms:
-#            print(tmp.data,tmp.dimensions)
-#        print("len:",len(sumTerms))
         if self.negZ==0:
             if len(self.E)+len(self.F)==0:
                 return helper.compareTensorsLE(Tensor.Tensor(0,1,[],-1,1,1),helper.tensorSlice(listOfTensors[self.Z],self.ZM,var),var)

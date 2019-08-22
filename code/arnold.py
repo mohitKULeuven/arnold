@@ -38,30 +38,17 @@ def learn(list_example,list_constants,tensor_properties,dimensions,var,m,n,slici
     for constraint in constraints:
         if  not constraint.isTrivial(tensor_properties):
             tmp.append(constraint)
-#            constraint.printNode()
     constraints=tmp
-#    print(exampleTensors)
     for tensor in exampleTensors[0]:
-#        print("################################")
-#        print(tensor.name)
         if tensor.name not in list_constants:
             key=[[] for j in range(12)]
             key[6]=tensor.index
             key[7]=tensor.dimensions
-#            key[2]=[[]]
             if tensor.type<0:
                 key[11]=1
             elif tensor.type>0:
                 key[11]=0
             constraints.append(Node.Node(key))
-#        if tensor.name not in list_constants and tensor.type>0:
-#            key=[[] for j in range(12)]
-#            key[3]=[[tensor.index]]
-#            key[4]=[[tensor.dimensions]]
-#            key[5]=[[]]
-#            key[11]=0
-#            constraints.append(Node.Node(key))
-#            constraints[len(constraints)-1].printNode()
     
     return constraints
 

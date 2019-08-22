@@ -308,8 +308,9 @@ def exampleToTensor(data,inputVars,dimensions,tensor_properties):
     return tensors
 def createMzn(constraints,folder,file_name,list_constants,list_example,dimensions,dimension_length):
 #    prec=0
-    print(dimensions)
-    file = open(folder+file_name+'.mzn', 'w')
+#    print(dimensions)
+    file = open(folder+"/"+file_name+'.mzn', 'w')
+    
     i=0
     for k,tensor in list_example.items():
         if len(dimensions[i])==0:
@@ -459,4 +460,5 @@ def createMzn(constraints,folder,file_name,list_constants,list_example,dimension
 #    file.write("constraint forall(a in  1..5, b in 1..5) (x[a,b] >= 0); \n")
 #    file.write("constraint z >= 0; \n")
     file.write('solve satisfy;')
+    print("Minizinc file generated:",folder+"/"+file_name+'.mzn')
 #    return prec

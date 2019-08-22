@@ -4,18 +4,7 @@ import Node
 
 def intelligentEnumeration(tensor_properties,root,var,m,n,slicing,negation,prevRoots,examples,constraintList):     
     tmpConstraintList=[]
-    
-#    for nodes in prevRoots:
-#        if root.isAncestor(nodes):
-#            if root.negZ==1 and root.Z==4 and len(root.E)==0 and len(root.F)==1 and len(root.F[0])==2 and root.F[0][0]==0 and root.F[0][1]==7:
-#                print("######################")
-#                root.prettyPrint()
-#                nodes.prettyPrint()
-#                print("######################")
-#            if root.satisfiesSignatures(m,n) and all(root.satisfiesConstraint(exp,var) for exp in examples):
-#                tmpConstraintList.append(root)
-#            return tmpConstraintList
-    
+        
     if root is None or (root.satisfiesSignatures(m,n) and not all(root.satisfiesConstraint(exp,var) for exp in examples)): 
         return tmpConstraintList
     children=root.generateChildren(tensor_properties,m,n,slicing,negation)

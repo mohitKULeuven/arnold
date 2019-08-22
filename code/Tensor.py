@@ -15,13 +15,11 @@ class Tensor:
         self.index=index #tells the index of this tensor in listTensors
         self.input=is_input
         self.name=name
-#        self.name=key[5]
          #type 1 is good, type 2 is bad (for products), type 3 is ugly (products)
     
     # generated children must satisfy signatures
     def multiply(self, n):
         tmp=Tensor(n*self.data,self.type,self.dimensions,self.index,1,self.name)
-#        tmp.data=n*self.data
         return tmp
         
     def tensorSlice(self,var):
@@ -87,5 +85,3 @@ class Tensor:
             for item in Tensor.powerset(seq[1:]):
                 yield [seq[0]]+item
                 yield item
-
-#print(list(Tensor.powerset([1,2,3])))
